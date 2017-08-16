@@ -17,9 +17,11 @@ from ..utils.assistant_downloader import AssistantDownloader, \
 from ..utils.intent_class_generator import IntentClassGenerator
 from ..utils.pip_installer import PipInstaller
 from ..utils.snips import Snips, SnipsUnsupportedPlatform, SnipsInstallationFailure
-from ..utils.os_helpers import cmd_exists, is_raspi_os, remove_file, create_dir, ask_for_input, ask_for_password, get_user_email_git
+from ..utils.os_helpers import cmd_exists, is_raspi_os, remove_file, create_dir, ask_for_input, ask_for_password, \
+    get_user_email_git
 from ..utils.microphone_setup import MicrophoneSetup
 from ..utils.systemd import Systemd
+from ..utils.custom_asr import CustomASR
 from ..utils.bluetooth import Bluetooth
 
 from snipsskillscore.logging import log, log_success, log_error
@@ -66,7 +68,7 @@ class Install(Base):
                     email, password = self.log_user_in()
 
                 AssistantDownloader(email, password, snipsfile.assistant_id).download(ASSISTANT_DIR,
-                                                                                     ASSISTANT_ZIP_FILENAME)
+                                                                                      ASSISTANT_ZIP_FILENAME)
             except:
                 log_error("Error downloading assistant. " +
                           "Make sure the provided URL in the Snipsfile is correct, " +
@@ -110,6 +112,9 @@ class Install(Base):
 
         Install.setup_bluetooth(snipsfile.mqtt_hostname, snipsfile.mqtt_port)
 
+        if self.options['customASR'] == True:
+            self.setup_custom_asr()
+
         remove_file(ASSISTANT_ZIP_PATH)
 
         log_success("All done! Type 'snipsskills run' to launch the skills server. " +
@@ -130,3 +135,6 @@ class Install(Base):
         email = ask_for_input("Email address: ", get_user_email_git())
         password = ask_for_password("password: ")
         return email, password
+
+    def setup_custom_asr(self):
+        CustomASR().setup()
