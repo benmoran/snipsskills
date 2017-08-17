@@ -50,6 +50,9 @@ def execute_command(command, silent=False):
         stdout = subprocess.PIPE
     subprocess.Popen(command.split(), stdout=stdout).communicate()
 
+def get_command_output(command_array):
+    return subprocess.check_output(command_array)
+
 
 def pipe_commands(first_command, second_command, silent):
     """ Execute piped commands: `first_command | second_command`.

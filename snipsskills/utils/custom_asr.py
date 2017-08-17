@@ -3,17 +3,17 @@
 """
 TODO :
 - Remove static methods [x]
-- Factor the execution of unix commands
+- Factor the execution of unix commands [x]
+- Test methods []
+- Remove Debug Flag or find alt solution []
 """
-
-
 
 import getpass
 import os
 import subprocess
 
 
-from .os_helpers import execute_command, execute_root_command, cmd_exists, which
+from .os_helpers import execute_command, execute_root_command, get_command_output, cmd_exists, which
 
 
 class CustomASR:
@@ -21,15 +21,13 @@ class CustomASR:
 
     def __init__(self, DEBUG, asr_archive_path):
         self.ASR_ARGUMENTS = "-v /opt/snips/asr:/usr/share/snips/asr "
+        self.separation_string = "snipsdocker/platform"
         self.asr_archive_path = asr_archive_path
 
         if not DEBUG:
             self.snips_command_path = self.get_snipsskills_params()
         else:
             self.snips_command_path = "/usr/bin/snips"
-
-    def run_command(self, cmd):
-        return os.system(cmd)
 
     def setup(self):
         """
@@ -68,22 +66,20 @@ class CustomASR:
             return
         else:
             updated_snips_cmd = self.generate_updated_snips_command()
-            CustomASR.write_command_to_snips_command_file(updated_snips_cmd)
+            self.write_command_to_snips_command_file(updated_snips_cmd)
             return
 
     def get_current_snips_command(self):  # TODO : Clean this up
-        return subprocess.check_output(['tail','-n','1',self.snips_command_path])
+        return get_command_output(['tail','-n','1',self.snips_command_path])
 
-    def write_command_to_snips_command_file(self, cmd, snips_command_file_path):
-        updated_snips_command_line = CustomASR.get_snips_command(snips_command_file_path)
+    def write_command_to_snips_command_file(self, cmd):
+        updated_snips_command_line = CustomASR.get_snips_command(self.snips_command_file_path)
 
         full_command = self.get_template() + "\n" + updated_snips_command_line
 
-        os.system("sudo cp {} {}.backup").format(snips_command_file_path)
-        os.system("sudo echo \"{}\" > {}".format(full_command, snips_command_file_path))
-        os.system("sudo chmod a+rwx {}".format(snips_command_file_path))
-
-
+        execute_root_command("sudo cp {} {}.backup".format(self.snips_command_file_path))
+        execute_root_command("sudo echo \"{}\" > {}".format(full_command, self.snips_command_file_path))
+        execute_root_command("sudo chmod a+rwx {}".format(self.snips_command_file_path))
 
     def generate_updated_snips_command(self):
         current_snips_command = self.get_current_snips_command()
@@ -91,8 +87,7 @@ class CustomASR:
         if 'asr' in current_snips_command.lower():  # This means, we already updated the snips command
             return current_snips_command
         else:
-            separation_string = "snipsdocker/platform"
-            index_of_separation = current_snips_command.find(separation_string)
+            index_of_separation = current_snips_command.find(self.separation_string)
             current_snips_command = current_snips_command[:index_of_separation] \
                                     + self.ASR_ARGUMENTS \
                                     + current_snips_command[index_of_separation:]
@@ -101,6 +96,6 @@ class CustomASR:
 
     def get_template(self):
         if cmd_exists('snips'):
-            return subprocess.call(['head', '-n', '-1', self.snips_command_path])
+            return get_command_output(['head', '-n', '-1', self.snips_command_path])
         else:
             return None
