@@ -1,12 +1,5 @@
 # -*-: coding utf-8 -*-
 """ Custom ASR installer """
-"""
-TODO :
-- Remove static methods [x]
-- Factor the execution of unix commands [x]
-- Test methods []
-- Remove Debug Flag or find alt solution []
-"""
 
 import getpass
 import os
@@ -23,11 +16,7 @@ class CustomASR:
         self.ASR_ARGUMENTS = "-v /opt/snips/asr:/usr/share/snips/asr "
         self.separation_string = "snipsdocker/platform"
         self.asr_archive_path = asr_archive_path
-
-        if not DEBUG:
-            self.snips_command_path = self.get_snipsskills_params()
-        else:
-            self.snips_command_path = "/usr/bin/snips"
+        self.snips_command_path = self.get_snipsskills_params()
 
     def setup(self):
         """
@@ -69,7 +58,7 @@ class CustomASR:
             self.write_command_to_snips_command_file(updated_snips_cmd)
             return
 
-    def get_current_snips_command(self):  # TODO : Clean this up
+    def get_current_snips_command(self):
         return get_command_output(['tail','-n','1',self.snips_command_path])
 
     def write_command_to_snips_command_file(self, cmd):
