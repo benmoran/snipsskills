@@ -25,6 +25,8 @@ def is_raspi_os():
     """
     return 'arm' in " ".join(os.uname())
 
+def execute_root_command(command):
+    os.system(command)
 
 def create_dir(dir_name):
     """ Create directory in the current working directory, if it does
