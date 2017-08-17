@@ -6,7 +6,7 @@ import shutil
 import sys
 from zipfile import is_zipfile
 
-from .base import Base, ASSISTANT_DIR, ASSISTANT_ZIP_FILENAME, \
+from .base import Base, ASSISTANT_DIR, ASSISTANT_ZIP_FILENAME, ASR_ARCHIVE_ZIP_FILENAME, \
     ASSISTANT_ZIP_PATH, INTENTS_DIR, SNIPSFILE
 
 from ..utils.snipsfile_parser import Snipsfile, SnipsfileParseException, \
@@ -112,8 +112,17 @@ class Install(Base):
 
         Install.setup_bluetooth(snipsfile.mqtt_hostname, snipsfile.mqtt_port)
 
-        if self.options['customASR'] == True:
-            self.setup_custom_asr()
+        if snipsfile.custom_asr_url is not None:
+            log("Fetching custom ASR archive ...")
+            try:
+                AssistantDownloader.download(snipsfile.custom_asr_url,
+                                             ASSISTANT_DIR,
+                                             ASR_ARCHIVE_ZIP_FILENAME)
+                log("Installing custom ASR")
+                CustomASR(snipsfile.custom_asr_url).setup()
+
+            except AssistantDownloaderException:
+                log_error("Error downloading custom ASR model.")
 
         remove_file(ASSISTANT_ZIP_PATH)
 

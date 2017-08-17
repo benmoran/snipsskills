@@ -12,11 +12,11 @@ from .os_helpers import execute_command, execute_root_command, get_command_outpu
 class CustomASR:
     """ CustomASR utilities. """
 
-    def __init__(self, DEBUG, asr_archive_path):
+    def __init__(self, asr_archive_path):
         self.ASR_ARGUMENTS = "-v /opt/snips/asr:/usr/share/snips/asr "
         self.separation_string = "snipsdocker/platform"
         self.asr_archive_path = asr_archive_path
-        self.snips_command_path = self.get_snipsskills_params()
+        self.snips_command_path = self.get_snips_command_path()
 
     def setup(self):
         """
@@ -27,14 +27,11 @@ class CustomASR:
         - Change the `snips` script to add ASR tags
         """
 
-        CustomASR.extract_asr_archive()
-        CustomASR.update_snips_command()
+        self.extract_asr_archive()
+        self.update_snips_command()
 
-    def get_snipsskills_params(self):
-        try:
-            snips_command_path = which("snips")
-        except subprocess.CalledProcessError:
-            snips_command_path = None
+    def get_snips_command_path(self):
+        snips_command_path = which("snips")
 
         if snips_command_path is None or len(snips_command_path.strip()) == 0:
             snips_command_path = raw_input("Path to the snips binary: ")
@@ -62,13 +59,13 @@ class CustomASR:
         return get_command_output(['tail','-n','1',self.snips_command_path])
 
     def write_command_to_snips_command_file(self, cmd):
-        updated_snips_command_line = CustomASR.get_snips_command(self.snips_command_file_path)
+        updated_snips_command_line = self.generate_updated_snips_command()
 
         full_command = self.get_template() + "\n" + updated_snips_command_line
 
-        execute_root_command("sudo cp {} {}.backup".format(self.snips_command_file_path))
-        execute_root_command("sudo echo \"{}\" > {}".format(full_command, self.snips_command_file_path))
-        execute_root_command("sudo chmod a+rwx {}".format(self.snips_command_file_path))
+        execute_root_command("sudo cp {} {}.backup".format(self.snips_command_path, self.snips_command_path))
+        execute_root_command("sudo echo \"{}\" > {}".format(full_command, self.snips_command_path))
+        execute_root_command("sudo chmod a+rwx {}".format(self.snips_command_path))
 
     def generate_updated_snips_command(self):
         current_snips_command = self.get_current_snips_command()
