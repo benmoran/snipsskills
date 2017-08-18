@@ -12,8 +12,7 @@ from .base import Base, ASSISTANT_DIR, ASSISTANT_ZIP_FILENAME, \
 from ..utils.snipsfile_parser import Snipsfile, SnipsfileParseException, \
     SnipsfileNotFoundError
 
-from ..utils.assistant_downloader import AssistantDownloader, \
-    DownloaderException
+from ..utils.assistant_downloader import AssistantDownloader, DownloaderException
 from ..utils.intent_class_generator import IntentClassGenerator
 from ..utils.pip_installer import PipInstaller
 from ..utils.snips import Snips, SnipsUnsupportedPlatform, SnipsInstallationFailure
@@ -115,13 +114,12 @@ class Install(Base):
         if snipsfile.custom_asr_url is not None:
             log("Fetching custom ASR archive ...")
             try:
-                AssistantDownloader.download(snipsfile.custom_asr_url,
-                                             ASSISTANT_DIR,
+                AssistantDownloader.download(ASSISTANT_DIR, # TODO, check that.
                                              ASR_ARCHIVE_ZIP_FILENAME)
                 log("Installing custom ASR")
                 CustomASR(ASR_ARCHIVE_ZIP_PATH).setup()
 
-            except AssistantDownloaderException:
+            except DownloaderException:
                 log_error("Error downloading custom ASR model.")
 
         remove_file(ASSISTANT_ZIP_PATH)
