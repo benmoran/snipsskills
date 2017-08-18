@@ -140,7 +140,7 @@ def which(command):
     """
     try:
         return subprocess.check_output(
-            ['which', command]).strp()
+            ['which', command]).strip()
     except subprocess.CalledProcessError:
         return None
 

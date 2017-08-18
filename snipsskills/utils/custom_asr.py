@@ -56,30 +56,20 @@ class CustomASR:
             self.write_snips_unit_file()
             return
 
-    def get_current_snips_command(self):
+    def get_current_snips_command(self): # Deprecated
         return get_command_output(['tail','-n','1',self.snips_command_path]).strip()
 
-    def write_snips_unit_file(self, cmd):
+    def write_snips_unit_file(self):
         updated_snips_command = self.generate_updated_snips_command()
         contents = Systemd.get_template(SNIPS_SERVICE_NAME)
         if contents is None:
             return
-        contents = contents.replace("{{SNIPSSKILLS_PATH}}", updated_snips_command)
+        contents = contents.replace("{{SNIPS_PATH}}", updated_snips_command)
         Systemd.write_systemd_file(
             SNIPS_SERVICE_NAME, self.default_user, contents)
 
     def generate_updated_snips_command(self):
-        current_snips_command = self.get_current_snips_command()
-
-        if 'asr' in current_snips_command.lower():  # This means, we already updated the snips command
-            return current_snips_command
-        else:
-            index_of_separation = current_snips_command.find(self.separation_string)
-            current_snips_command = current_snips_command[:index_of_separation] \
-                                    + self.ASR_ARGUMENTS \
-                                    + current_snips_command[index_of_separation:]
-
-            return current_snips_command
+        return "snips -a"
 
     def get_template(self):
         if cmd_exists('snips'):
