@@ -6,6 +6,7 @@ import os
 import shlex
 import subprocess
 import urllib2
+import getpass
 
 
 def cmd_exists(cmd):
@@ -25,8 +26,10 @@ def is_raspi_os():
     """
     return 'arm' in " ".join(os.uname())
 
+
 def execute_root_command(command):
     os.system(command)
+
 
 def create_dir(dir_name):
     """ Create directory in the current working directory, if it does
@@ -49,6 +52,7 @@ def execute_command(command, silent=False):
     else:
         stdout = subprocess.PIPE
     subprocess.Popen(command.split(), stdout=stdout).communicate()
+
 
 def get_command_output(command_array):
     return subprocess.check_output(command_array)
@@ -105,6 +109,7 @@ def ask_yes_no(question):
         return False
     return True
 
+
 def ask_for_input(question, default_value=None):
     if default_value and len(default_value) > 0:
         answer = raw_input("{} [{}]".format(question, default_value))
@@ -118,12 +123,14 @@ def ask_for_input(question, default_value=None):
     else:
         return None
 
+
 def ask_for_password(question):
     answer = getpass("{} ".format(question))
     if answer is not None and answer.strip() != "":
         return answer
     else:
         return None
+
 
 def which(command):
     """ Get full path for an executable.
@@ -133,13 +140,15 @@ def which(command):
     """
     try:
         return subprocess.check_output(
-            ['which', command]).strip()
+            ['which', command]).strp()
     except subprocess.CalledProcessError:
         return None
+
 
 def reboot():
     """ Reboot the device."""
     execute_command("sudo reboot")
+
 
 def get_os_name():
     os_release = subprocess.check_output(['cat', '/etc/os-release'])
@@ -151,6 +160,7 @@ def get_os_name():
                 return os_version.replace("\"", "")
     return None
 
+
 def get_revision():
     process1 = subprocess.Popen('cat /proc/cpuinfo'.split(), stdout=subprocess.PIPE)
     process2 = subprocess.Popen('grep Revision'.split(), stdin=process1.stdout, stdout=subprocess.PIPE)
@@ -159,13 +169,16 @@ def get_revision():
     process2.stdout.close()
     return process3.communicate()
 
+
 def get_sysinfo():
     return {
         "os_name": get_os_name()
     }
 
+
 def get_command_output(command_array):
     return subprocess.check_output(command_array)
+
 
 def get_user_email_git():
     if cmd_exists("git"):
@@ -177,3 +190,6 @@ def get_user_email_git():
     else:
         return None
 
+
+def get_default_user():
+    return getpass.getuser()

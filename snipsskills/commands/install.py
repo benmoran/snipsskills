@@ -6,8 +6,8 @@ import shutil
 import sys
 from zipfile import is_zipfile
 
-from .base import Base, ASSISTANT_DIR, ASSISTANT_ZIP_FILENAME, ASR_ARCHIVE_ZIP_FILENAME, \
-    ASSISTANT_ZIP_PATH, INTENTS_DIR, SNIPSFILE
+from .base import Base, ASSISTANT_DIR, ASSISTANT_ZIP_FILENAME, \
+    ASSISTANT_ZIP_PATH, INTENTS_DIR, SNIPSFILE, ASR_ARCHIVE_ZIP_FILENAME, ASR_ARCHIVE_ZIP_PATH
 
 from ..utils.snipsfile_parser import Snipsfile, SnipsfileParseException, \
     SnipsfileNotFoundError
@@ -119,7 +119,7 @@ class Install(Base):
                                              ASSISTANT_DIR,
                                              ASR_ARCHIVE_ZIP_FILENAME)
                 log("Installing custom ASR")
-                CustomASR(snipsfile.custom_asr_url).setup()
+                CustomASR(ASR_ARCHIVE_ZIP_PATH).setup()
 
             except AssistantDownloaderException:
                 log_error("Error downloading custom ASR model.")

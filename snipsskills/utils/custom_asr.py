@@ -6,7 +6,8 @@ import os
 import subprocess
 
 
-from .os_helpers import execute_command, execute_root_command, get_command_output, cmd_exists, which
+from .os_helpers import execute_command, execute_root_command, get_command_output, cmd_exists, which, get_default_user
+from systemd import Systemd, SNIPS_SERVICE_NAME
 
 
 class CustomASR:
@@ -17,6 +18,7 @@ class CustomASR:
         self.separation_string = "snipsdocker/platform"
         self.asr_archive_path = asr_archive_path
         self.snips_command_path = self.get_snips_command_path()
+        self.default_user = get_default_user()
 
     def setup(self):
         """
@@ -51,21 +53,20 @@ class CustomASR:
         if not cmd_exists("snips"):
             return
         else:
-            updated_snips_cmd = self.generate_updated_snips_command()
-            self.write_command_to_snips_command_file(updated_snips_cmd)
+            self.write_snips_unit_file()
             return
 
     def get_current_snips_command(self):
-        return get_command_output(['tail','-n','1',self.snips_command_path])
+        return get_command_output(['tail','-n','1',self.snips_command_path]).strip()
 
-    def write_command_to_snips_command_file(self, cmd):
-        updated_snips_command_line = self.generate_updated_snips_command()
-
-        full_command = self.get_template() + "\n" + updated_snips_command_line
-
-        execute_root_command("sudo cp {} {}.backup".format(self.snips_command_path, self.snips_command_path))
-        execute_root_command("sudo echo \"{}\" > {}".format(full_command, self.snips_command_path))
-        execute_root_command("sudo chmod a+rwx {}".format(self.snips_command_path))
+    def write_snips_unit_file(self, cmd):
+        updated_snips_command = self.generate_updated_snips_command()
+        contents = Systemd.get_template(SNIPS_SERVICE_NAME)
+        if contents is None:
+            return
+        contents = contents.replace("{{SNIPSSKILLS_PATH}}", updated_snips_command)
+        Systemd.write_systemd_file(
+            SNIPS_SERVICE_NAME, self.default_user, contents)
 
     def generate_updated_snips_command(self):
         current_snips_command = self.get_current_snips_command()
@@ -82,6 +83,6 @@ class CustomASR:
 
     def get_template(self):
         if cmd_exists('snips'):
-            return get_command_output(['head', '-n', '-1', self.snips_command_path])
+            return get_command_output(['head', '-n', '-1', self.snips_command_path]).rstrip()
         else:
             return None

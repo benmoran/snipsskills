@@ -8,6 +8,7 @@ ASSISTANT_ZIP_PATH = "{}/{}".format(ASSISTANT_DIR, ASSISTANT_ZIP_FILENAME)
 INTENTS_DIR = ".snips/intents"
 
 ASR_ARCHIVE_ZIP_FILENAME = "asr.tar.gz"
+ASR_ARCHIVE_ZIP_PATH = "{}/{}".format(ASSISTANT_DIR, ASR_ARCHIVE_ZIP_FILENAME)
 
 # pylint: disable=too-few-public-methods
 class Base(object):
