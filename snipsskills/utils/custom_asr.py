@@ -56,9 +56,6 @@ class CustomASR:
             self.write_snips_unit_file()
             return
 
-    def get_current_snips_command(self): # Deprecated
-        return get_command_output(['tail','-n','1',self.snips_command_path]).strip()
-
     def write_snips_unit_file(self):
         updated_snips_command = self.generate_updated_snips_command()
         contents = Systemd.get_template(SNIPS_SERVICE_NAME)
