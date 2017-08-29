@@ -13,23 +13,19 @@ from systemd import Systemd, SNIPS_SERVICE_NAME
 class CustomASR:
     """ CustomASR utilities. """
 
-    def __init__(self, asr_archive_path):
-        self.ASR_ARGUMENTS = "-v /opt/snips/asr:/usr/share/snips/asr "
+    def __init__(self, asr_folder_path):
+        self.ASR_ARGUMENTS = "-v /opt/snips/config/assistant/custom_asr:/usr/share/snips/asr"
         self.separation_string = "snipsdocker/platform"
-        self.asr_archive_path = asr_archive_path
+        self.asr_folder_path = asr_folder_path
         self.snips_command_path = self.get_snips_command_path()
         self.default_user = get_default_user()
 
     def setup(self):
         """
         To setup the ASR, we go through the following steps.
-        - Download the archive that contains the custom ASR model (optional)
-        - Extract the archive
-        - Move the ASR model to an appropriate location
+        - Move the ASR model to an appropriate location (done by the `snips-install-assistant` program
         - Change the `snips` script to add ASR tags
         """
-
-        self.extract_asr_archive()
         self.update_snips_command()
 
     def get_snips_command_path(self):
@@ -40,33 +36,36 @@ class CustomASR:
 
         return snips_command_path
 
-    def generate_asr_archive_extraction_command(self):
-        return "sudo mkdir -p /opt/snips/asr && sudo tar xf " \
-            + self.asr_archive_path \
-            + " -C /opt/snips/asr --strip-components 1"
-
-    def extract_asr_archive(self):
-        extract_asr_archive_cmd = self.generate_asr_archive_extraction_command()
-        execute_root_command(extract_asr_archive_cmd)
 
     def update_snips_command(self):
         if not cmd_exists("snips"):
             return
         else:
-            self.write_snips_unit_file()
+            updated_snips_cmd = self.generate_updated_snips_command()
+            self.write_command_to_snips_command_file(updated_snips_cmd)
             return
 
-    def write_snips_unit_file(self):
-        updated_snips_command = self.generate_updated_snips_command()
-        contents = Systemd.get_template(SNIPS_SERVICE_NAME)
-        if contents is None:
-            return
-        contents = contents.replace("{{SNIPS_PATH}}", updated_snips_command)
-        Systemd.write_systemd_file(
-            SNIPS_SERVICE_NAME, self.default_user, contents)
+    def write_command_to_snips_command_file(self, cmd):
+        updated_snips_command_line = self.generate_updated_snips_command()
+
+        full_command = self.get_snips_command_template() + "\n" + updated_snips_command_line
+
+        execute_root_command("sudo cp {} {}.backup".format(self.snips_command_path, self.snips_command_path))
+        execute_root_command("sudo echo \"{}\" > {}".format(full_command, self.snips_command_path))
+        execute_root_command("sudo chmod a+rwx {}".format(self.snips_command_path))
 
     def generate_updated_snips_command(self):
-        return "snips -a"
+        current_snips_command = self.get_current_snips_command()
+
+        if 'asr' in current_snips_command.lower():  # This means, we already updated the snips command
+            return current_snips_command
+        else:
+            index_of_separation = current_snips_command.find(self.separation_string)
+            current_snips_command = current_snips_command[:index_of_separation] \
+                                    + self.ASR_ARGUMENTS \
+                                    + current_snips_command[index_of_separation:]
+
+            return current_snips_command
 
     def get_template(self):
         if cmd_exists('snips'):
