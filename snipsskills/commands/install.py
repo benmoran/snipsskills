@@ -111,12 +111,12 @@ class Install(Base):
 
         Install.setup_bluetooth(snipsfile.mqtt_hostname, snipsfile.mqtt_port)
 
-        if snipsfile.custom_asr_url is not None:
+        if snipsfile.custom_asr == True:
             try:
                 AssistantDownloader.download(ASSISTANT_DIR, # TODO, check that.
                                              ASR_ARCHIVE_ZIP_FILENAME)
                 log("Installing custom ASR")
-                CustomASR(ASR_ARCHIVE_ZIP_PATH).setup()
+                CustomASR().setup()
 
             except DownloaderException:
                 log_error("Error downloading custom ASR model.")

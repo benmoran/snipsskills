@@ -101,7 +101,7 @@ class Snipsfile:
         self.mqtt_port = get(yaml_config, ['mqtt_broker', 'port'], 9898)
         
         self.microphone_config = MicrophoneConfig(yaml_config)
-        self.custom_asr_url = get(yaml_config, ['custom_asr'])
+        self.custom_asr = get(yaml_config, ['custom_asr'], False)
 
         self.skilldefs = []
         for skill in get(yaml_config, ['skills'], []):
