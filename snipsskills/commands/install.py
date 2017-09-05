@@ -111,7 +111,7 @@ class Install(Base):
 
         Install.setup_bluetooth(snipsfile.mqtt_hostname, snipsfile.mqtt_port)
 
-        if snipsfile.custom_asr == True:
+        if snipsfile.custom_asr == True: # TODO, make this work.
             try:
                 AssistantDownloader.download(ASSISTANT_DIR, # TODO, check that.
                                              ASR_ARCHIVE_ZIP_FILENAME)
