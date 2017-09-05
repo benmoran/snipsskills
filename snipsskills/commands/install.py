@@ -111,15 +111,12 @@ class Install(Base):
 
         Install.setup_bluetooth(snipsfile.mqtt_hostname, snipsfile.mqtt_port)
 
-        if snipsfile.custom_asr == True: # TODO, make this work.
+        if snipsfile.custom_asr == True:  # TODO, make this work.
             try:
-                AssistantDownloader.download(ASSISTANT_DIR, # TODO, check that.
-                                             ASR_ARCHIVE_ZIP_FILENAME)
                 log("Installing custom ASR")
                 CustomASR().setup()
-
-            except DownloaderException:
-                log_error("Error downloading custom ASR model.")
+            except:
+                log_error("Error setting up custom ASR.")
 
         remove_file(ASSISTANT_ZIP_PATH)
 
@@ -141,6 +138,3 @@ class Install(Base):
         email = ask_for_input("Email address: ", get_user_email_git())
         password = ask_for_password("password: ")
         return email, password
-
-    def setup_custom_asr(self):
-        CustomASR().setup()

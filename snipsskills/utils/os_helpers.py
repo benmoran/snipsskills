@@ -6,7 +6,7 @@ import os
 import shlex
 import subprocess
 import urllib2
-import getpass
+from getpass import getpass, getuser
 
 
 def cmd_exists(cmd):
@@ -176,10 +176,6 @@ def get_sysinfo():
     }
 
 
-def get_command_output(command_array):
-    return subprocess.check_output(command_array)
-
-
 def get_user_email_git():
     if cmd_exists("git"):
         command = "git config user.email"
@@ -192,4 +188,4 @@ def get_user_email_git():
 
 
 def get_default_user():
-    return getpass.getuser()
+    return getuser()

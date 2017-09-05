@@ -5,10 +5,11 @@ import getpass
 import os
 import subprocess
 
-
 from .os_helpers import execute_command, execute_root_command, get_command_output, cmd_exists, which, get_default_user
 from systemd import Systemd, SNIPS_SERVICE_NAME
 
+class CustomASRInstallException(Exception):
+    pass
 
 class CustomASR:
     """ CustomASR utilities. """
@@ -22,8 +23,7 @@ class CustomASR:
     def setup(self):
         """
         To setup the ASR, we go through the following steps.
-        - Move the ASR model to an appropriate location (done by the `snips-install-assistant` program
-        - Change the `snips` script to add ASR tags
+        - Modify the command ran by the SnipsService to take into account the custom ASR weights.
         """
         self.update_snips_command()
 
@@ -35,19 +35,17 @@ class CustomASR:
 
         return snips_command_path
 
-
     def update_snips_command(self):
         if not cmd_exists("snips"):
             return
         else:
-            updated_snips_cmd = self.generate_updated_snips_command()
-            self.write_command_to_snips_command_file(updated_snips_cmd)
+            self.write_command_to_snips_command_file()
             return
 
     def get_current_snips_command(self):
-        return get_command_output(['tail','-n','1',self.snips_command_path])
+        return get_command_output(['tail', '-n', '1', self.snips_command_path])
 
-    def write_command_to_snips_command_file(self, cmd):
+    def write_command_to_snips_command_file(self):
         updated_snips_command_line = self.generate_updated_snips_command()
 
         full_command = self.get_snips_command_template() + "\n" + updated_snips_command_line
